@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de CV</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        .cv-form {
+            width: 600px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .cv-form h2 {
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .form-group button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .form-group button:hover {
+            background-color: #218838;
+        }
+
+        .dynamic-fields {
+            margin-bottom: 20px;
+        }
+
+        .field-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .remove-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            float: right;
+        }
+
+        .remove-btn:hover {
+            background-color: #c82333;
+        }
+
+        .pdf-preview {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .pdf-preview iframe {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="cv-form">
+    <h2>Générateur de CV</h2>
+    <div class="form-group">
+        <label for="nom">Nom</label>
+        <input type="text" id="nom" placeholder="Votre nom" />
+    </div>
+    <div class="form-group">
+        <label for="prenom">Prénom</label>
+        <input type="text" id="prenom" placeholder="Votre prénom" />
+    </div>
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="Votre email" />
+    </div>
+    <div class="form-group">
+        <label for="telephone">Téléphone</label>
+        <input type="tel" id="telephone" placeholder="Votre téléphone" />
+    </div>
+    <div class="form-group">
+        <label for="adresse">Adresse</label>
+        <input type="text" id="adresse" placeholder="Votre adresse" />
+    </div>
+
+    <h3>Expériences professionnelles</h3>
+    <div class="dynamic-fields" id="experiences-list"></div>
+    <button type="button" onclick="addExperience()">Ajouter une expérience</button>
+
+    <h3>Formations</h3>
+    <div class="dynamic-fields" id="education-list"></div>
+    <button type="button" onclick="addEducation()">Ajouter une formation</button>
+
+    <div class="form-group">
+        <button onclick="generateCV()">Générer le CV</button>
+    </div>
+
+    <div class="pdf-preview" id="pdf-preview"></div>
+</div>
+
+<script>
+    // Fonction pour ajouter une expérience professionnelle
+    function addExperience() {
+        const experiencesList = document.getElementById('experiences-list');
+        const experienceItem = document.createElement('div');
+        experienceItem.classList.add('field-item');
+        experienceItem.innerHTML = `
+                <label>Poste</label>
+                <input type="text" class="poste" placeholder="Poste" />
+                <label>Entreprise</label>
+                <input type="text" class="entreprise" placeholder="Entreprise" />
+                <label>Dates</label>
+                <input type="text" class="dates" placeholder="Dates (ex: 2018-2020)" />
+                <label>Description</label>
+                <textarea class="description" placeholder="Description du poste"></textarea>
+                <button class="remove-btn" onclick="removeField(this)">Supprimer</button>
+            `;
+        experiencesList.appendChild(experienceItem);
+    }
+
+    // Fonction pour ajouter une formation
+    function addEducation() {
+        const educationList = document.getElementById('education-list');
+        const educationItem = document.createElement('div');
+        educationItem.classList.add('field-item');
+        educationItem.innerHTML = `
+                <label>Diplôme</label>
+                <input type="text" class="diplome" placeholder="Diplôme" />
+                <label>École</label>
+                <input type="text" class="ecole" placeholder="École" />
+                <label>Dates</label>
+                <input type="text" class="dates" placeholder="Dates (ex: 2016-2018)" />
+                <button class="remove-btn" onclick="removeField(this)">Supprimer</button>
+            `;
+        educationList.appendChild(educationItem);
+    }
+
+    // Fonction pour supprimer un champ
+    function removeField(button) {
+        button.parentElement.remove();
+    }
+
+    // Fonction pour générer le CV
+    async function generateCV() {
+        const nom = document.getElementById('nom').value;
+        const prenom = document.getElementById('prenom').value;
+        const email = document.getElementById('email').value;
+        const telephone = document.getElementById('telephone').value;
+        const adresse = document.getElementById('adresse').value;
+
+        // Récupérer les expériences professionnelles
+        const experiences = Array.from(document.getElementById('experiences-list').children).map(experienceItem => ({
+            poste: experienceItem.querySelector('.poste').value,
+            entreprise: experienceItem.querySelector('.entreprise').value,
+            dates: experienceItem.querySelector('.dates').value,
+            description: experienceItem.querySelector('.description').value,
+        }));
+
+        // Récupérer les formations
+        const education = Array.from(document.getElementById('education-list').children).map(educationItem => ({
+            diplome: educationItem.querySelector('.diplome').value,
+            ecole: educationItem.querySelector('.ecole').value,
+            dates: educationItem.querySelector('.dates').value,
+        }));
+
+        const response = await fetch('http://localhost:3006/generate-cv', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                nom,
+                prenom,
+                email,
+                telephone,
+                adresse,
+                experiences,
+                education
+            })
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const pdfPreview = document.getElementById('pdf-preview');
+            pdfPreview.innerHTML = `<iframe src="${url}" frameborder="0"></iframe>`;
+        } else {
+            alert('Erreur lors de la génération du CV');
+        }
+    }
+</script>
+
+</body>
+</html>
